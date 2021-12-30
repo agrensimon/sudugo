@@ -25,12 +25,21 @@ func (s *suduko) solve(cursor int) bool {
 		cursor++
 	}
 
-	for n := 1; n <= 9; n++ {
+	toTry := len(s.possibleRowMoves[cursor/9])
+	i := 0
+	for i < toTry {
+		n, ok := s.popMove(cursor / 9)
+		if !ok {
+			return false
+		}
+
 		s.board[cursor/9][cursor%9] = n
 		if s.check(cursor/9, cursor%9) && s.solve(cursor+1) {
 			return true
 		}
 		s.board[cursor/9][cursor%9] = 0
+		s.appendMove(cursor/9, n)
+		i++
 	}
 	return false
 }
@@ -90,6 +99,7 @@ func (s *suduko) checkCol(col int) bool {
 func newSuduko() suduko {
 	s := suduko{}
 	s.board = make([][]int, 9)
+	s.possibleRowMoves = make(map[int][]int)
 	for i := 0; i < 9; i++ {
 		s.board[i] = make([]int, 9)
 		s.possibleRowMoves[i] = append(s.possibleRowMoves[i], []int{1, 2, 3, 4, 5, 6, 7, 8, 9}...)
@@ -141,6 +151,7 @@ func parse(path string) (begin suduko, goal suduko, err error) {
 				return suduko{}, suduko{}, err
 			}
 			begin.board[row][col] = i
+			begin.possibleRowMoves[row] = remove(begin.possibleRowMoves[row], i)
 			col++
 		}
 		col = 0
@@ -167,9 +178,26 @@ func parse(path string) (begin suduko, goal suduko, err error) {
 	return
 }
 
-func (s *suduko) getMove(row int) int {
+func (s *suduko) popMove(row int) (int, bool) {
+	if len(s.possibleRowMoves[row]) == 0 {
+		return -1, false
+	}
 	move := s.possibleRowMoves[row][0]
 	s.possibleRowMoves[row][0] = 0
 	s.possibleRowMoves[row] = s.possibleRowMoves[row][1:]
-	return move
+	return move, true
+}
+
+func (s *suduko) appendMove(row, move int) {
+	s.possibleRowMoves[row] = append(s.possibleRowMoves[row], move)
+}
+
+// remove removes an integer from an integer slice if there is a matching value
+func remove(arr []int, val int) []int {
+	for i, elem := range arr {
+		if elem == val {
+			return append(arr[:i], arr[i+1:]...)
+		}
+	}
+	return arr
 }

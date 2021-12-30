@@ -6,6 +6,14 @@ import (
 	"testing"
 )
 
+func TestRemove(t *testing.T) {
+	input := []int{1, 2, 3, 4, 5, 6}
+	got := remove(input, 3)
+	if !reflect.DeepEqual(got, []int{1, 2, 4, 5, 6}) {
+		t.Fatal()
+	}
+}
+
 func TestParse(t *testing.T) {
 	wantBegin := newSuduko()
 	wantBegin.board[0][0] = 1
@@ -102,7 +110,7 @@ func TestUnsolvable(t *testing.T) {
 			t.Fatal("got a solution to unsolvable puzzle")
 		}
 
-		if !reflect.DeepEqual(got, want) {
+		if !reflect.DeepEqual(got.board, want.board) {
 			fmt.Println("got:")
 			got.dump()
 			fmt.Println("want:")
@@ -130,7 +138,7 @@ func TestSolvable(t *testing.T) {
 			t.Fatal("unable to solve")
 		}
 
-		if !reflect.DeepEqual(got, want) {
+		if !reflect.DeepEqual(got.board, want.board) {
 			fmt.Println("got:")
 			got.dump()
 			fmt.Println("want:")
